@@ -1,0 +1,28 @@
+@model TP_Final_Lucio.Models.Libro
+@{
+    ViewData["Title"] = "Detalle del libro";
+}
+<div class="detalle-libro">
+    <div class="detalle-imagen">
+        @if (!string.IsNullOrWhiteSpace(Model.Imagen)) { <img src="@Model.Imagen" alt="Tapa de @Model.Titulo" /> }
+        else { <div class="libro-sin-imagen grande">📖</div> }
+    </div>
+    <div>
+        <span class="categoria">@Model.Categoria</span>
+        <h1>@Model.Titulo</h1>
+        <h4>@Model.Autor</h4>
+        <p><strong>Año de edición:</strong> @Model.AnioEdicion</p>
+        <p>@Model.Descripcion</p>
+        <p class="estado @(Model.Disponible ? "disponible" : "ocupado")">@(Model.Disponible ? "Disponible" : "No disponible")</p>
+        @if (TempData["Mensaje"] != null) { <div class="alert alert-info">@TempData["Mensaje"]</div> }
+        @if (Model.Disponible)
+        {
+            <form asp-action="SolicitarPrestamo" method="post">
+                <input type="hidden" name="idLibro" value="@Model.Id" />
+                <button class="btn btn-primary" type="submit">Solicitar préstamo por 7 días</button>
+            </form>
+        }
+        else { <p class="text-muted">Este libro ya tiene un préstamo activo.</p> }
+        <a class="btn btn-link mt-2" asp-action="Catalogo">Volver al catálogo</a>
+    </div>
+</div>
