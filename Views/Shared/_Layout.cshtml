@@ -1,0 +1,41 @@
+﻿@{
+    bool hayUsuario = Context.Session.GetInt32("IdUsuario") != null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BiblioLucio</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="barra-superior">
+        <a class="marca" asp-controller="Home" asp-action="Index">BiblioLucio</a>
+        <nav>
+            @if (hayUsuario)
+            {
+                <a asp-action="Catalogo">Catálogo</a>
+                <a asp-action="MisPrestamos">Mis préstamos</a>
+                <span class="usuario">Hola, @Context.Session.GetString("Nombre")</span>
+                <form asp-action="Logout" method="post" class="form-salir">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
+                </form>
+            }
+            else
+            {
+                <a asp-action="Login">Iniciar sesión</a>
+                <a asp-action="CrearCuenta">Registrarse</a>
+            }
+        </nav>
+    </header>
+    <main class="container contenido">
+        @RenderBody()
+    </main>
+    <footer class="pie">BiblioLucio · Tu espacio para descubrir y leer</footer>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

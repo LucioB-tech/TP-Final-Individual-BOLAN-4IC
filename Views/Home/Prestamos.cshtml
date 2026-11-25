@@ -1,0 +1,62 @@
+@using TP_Final_Lucio.Models
+@{
+    ViewData["Title"] = "Mis préstamos";
+    var activos = ViewBag.Activos as List<Prestamo> ?? new List<Prestamo>();
+    var pasados = ViewBag.Pasados as List<Prestamo> ?? new List<Prestamo>();
+}
+<div class="encabezado-pagina">
+    <p class="etiqueta">TU ACTIVIDAD</p>
+    <h1>Mis préstamos</h1>
+    <p>Consultá los préstamos actuales y el historial.</p>
+    @if (TempData["Mensaje"] != null) { <div class="alert alert-info">@TempData["Mensaje"]</div> }
+</div>
+<h2 class="subtitulo">Préstamos actuales</h2>
+@if (activos.Count == 0) { <p>No tenés préstamos activos.</p> }
+<div class="row g-3 mb-5">
+@foreach (var p in activos)
+{
+    <div class="col-md-6">
+        <div class="prestamo-card" id="prestamo-@p.Id">
+            <h3>@p.Libro.Titulo</h3><p>@p.Libro.Autor</p>
+            <p>Retiro: @p.FechaRetiro.ToString("dd/MM/yyyy")</p>
+            <p>Devolución: @p.FechaDevolucion.ToString("dd/MM/yyyy")</p>
+            <p><strong>Código:</strong> @p.Codigo</p>
+            <button class="btn btn-outline-danger cancelar-prestamo" data-id="@p.Id">Cancelar préstamo</button>
+        </div>
+    </div>
+}
+</div>
+<h2 class="subtitulo">Préstamos anteriores</h2>
+@if (pasados.Count == 0) { <p>Todavía no tenés préstamos anteriores.</p> }
+<div class="row g-3">
+@foreach (var p in pasados)
+{
+    <div class="col-md-6">
+        <div class="prestamo-card">
+            <h3>@p.Libro.Titulo</h3><p>@p.Libro.Autor</p>
+            <p>Retiro: @p.FechaRetiro.ToString("dd/MM/yyyy")</p>
+            <p>Devolución: @p.FechaDevolucion.ToString("dd/MM/yyyy")</p>
+            <span class="estado ocupado">@(p.Cancelado ? "Cancelado" : "Finalizado")</span>
+        </div>
+    </div>
+}
+</div>
+@section Scripts {
+<script>
+document.querySelectorAll(".cancelar-prestamo").forEach(boton => {
+    boton.addEventListener("click", async () => {
+        if (!confirm("¿Querés cancelar este préstamo?")) return;
+        const datos = new URLSearchParams();
+        datos.append("id", boton.dataset.id);
+        const respuesta = await fetch("/Home/CancelarPrestamo", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: datos
+        });
+        const resultado = await respuesta.json();
+        alert(resultado.mensaje);
+        if (resultado.ok) document.getElementById("prestamo-" + boton.dataset.id)?.remove();
+    });
+});
+</script>
+}

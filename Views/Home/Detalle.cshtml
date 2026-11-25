@@ -1,0 +1,49 @@
+@model TP_Final_Lucio.Models.Libro
+@{
+    ViewData["Title"] = "Detalle del libro";
+}
+<div class="detalle-libro">
+    <div class="detalle-imagen">
+        @if (!string.IsNullOrWhiteSpace(Model.Imagen)) { <img src="@Model.Imagen" alt="Tapa de @Model.Titulo" /> }
+        else { <div class="libro-sin-imagen grande">📖</div> }
+    </div>
+    <div>
+        <span class="categoria">@Model.Categoria.Nombre</span>
+        <h1>@Model.Titulo</h1>
+        <h4>@Model.Autor</h4>
+        <p><strong>Año de edición:</strong> @Model.AnioEdicion</p>
+        <p>@Model.Descripcion</p>
+        <p id="estadoDisponibilidad" class="estado @(Model.Disponible ? "disponible" : "ocupado")">@(Model.Disponible ? "Disponible" : "No disponible")</p>
+        @if (TempData["Mensaje"] != null) { <div class="alert alert-info">@TempData["Mensaje"]</div> }
+        <form asp-action="SolicitarPrestamo" method="post" id="formPrestamo">
+            <input type="hidden" name="idLibro" value="@Model.Id" />
+            <div class="mb-3">
+                <label for="fechaRetiro" class="form-label">Fecha de retiro</label>
+                <input type="date" name="fechaRetiro" id="fechaRetiro" class="form-control"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+            </div>
+            <button id="botonSolicitar" class="btn btn-primary" type="submit" disabled="@(!Model.Disponible)">Solicitar préstamo por 7 días</button>
+        </form>
+        <a class="btn btn-link mt-2" asp-action="Catalogo">Volver al catálogo</a>
+    </div>
+</div>
+@section Scripts {
+<script>
+const fechaRetiro = document.getElementById("fechaRetiro");
+const estadoDisponibilidad = document.getElementById("estadoDisponibilidad");
+const botonSolicitar = document.getElementById("botonSolicitar");
+
+async function consultarDisponibilidad() {
+    if (!fechaRetiro.value) return;
+    const respuesta = await fetch(`/Home/Disponibilidad?id=@Model.Id&fecha=${fechaRetiro.value}`);
+    if (!respuesta.ok) return;
+    const resultado = await respuesta.json();
+    estadoDisponibilidad.textContent = resultado.mensaje;
+    estadoDisponibilidad.className = resultado.disponible ? "estado disponible" : "estado ocupado";
+    botonSolicitar.disabled = !resultado.disponible;
+}
+
+fechaRetiro.addEventListener("change", consultarDisponibilidad);
+consultarDisponibilidad();
+</script>
+}

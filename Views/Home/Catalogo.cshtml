@@ -1,0 +1,70 @@
+@using TP_Final_Lucio.Models
+@{
+    ViewData["Title"] = "Catálogo";
+    var libros = ViewBag.Libros as List<Libro> ?? new List<Libro>();
+    bool hayMas = ViewBag.HayMas == true;
+}
+<div class="encabezado-pagina">
+    <p class="etiqueta">EXPLORÁ Y DESCUBRÍ</p>
+    <h1>Catálogo de libros</h1>
+    <p>Elegí una historia y consultá si está disponible.</p>
+</div>
+<div class="row g-4" id="listaLibros">
+    @foreach (var libro in libros)
+    {
+        <div class="col-sm-6 col-lg-3">
+            <article class="libro-card">
+                @if (!string.IsNullOrWhiteSpace(libro.Imagen))
+                {
+                    <img src="@libro.Imagen" alt="Tapa de @libro.Titulo" />
+                }
+                else
+                {
+                    <div class="libro-sin-imagen">📖</div>
+                }
+                <div class="libro-contenido">
+                    <span class="categoria">@libro.Categoria.Nombre</span>
+                    <h2>@libro.Titulo</h2>
+                    <p>@libro.Autor</p>
+                    <span class="estado @(libro.Disponible ? "disponible" : "ocupado")">@(libro.Disponible ? "Disponible" : "Prestado")</span>
+                    <a class="btn btn-primary w-100 mt-3" asp-action="Detalle" asp-route-id="@libro.Id">Ver detalle</a>
+                </div>
+            </article>
+        </div>
+    }
+</div>
+@if (hayMas)
+{
+    <div class="text-center my-4">
+        <button id="verMas" class="btn btn-outline-primary" data-desde="@libros.Count">Ver más</button>
+    </div>
+}
+@section Scripts {
+<script>
+document.getElementById("verMas")?.addEventListener("click", async function () {
+    const boton = this;
+    const desde = Number(boton.dataset.desde);
+    boton.disabled = true;
+    const respuesta = await fetch(`/Home/CargarMas?desde=${desde}`);
+    if (!respuesta.ok) { boton.disabled = false; return; }
+    const libros = await respuesta.json();
+    const contenedor = document.getElementById("listaLibros");
+    libros.forEach(libro => {
+        const columna = document.createElement("div");
+        columna.className = "col-sm-6 col-lg-3";
+        const imagen = libro.imagen ? `<img src="${libro.imagen}" alt="Tapa de libro">` : `<div class="libro-sin-imagen">📖</div>`;
+        const titulo = document.createElement("h2"); titulo.textContent = libro.titulo;
+        const autor = document.createElement("p"); autor.textContent = libro.autor;
+        const tarjeta = document.createElement("article"); tarjeta.className = "libro-card";
+        const contenido = document.createElement("div"); contenido.className = "libro-contenido";
+        const categoria = document.createElement("span"); categoria.className = "categoria"; categoria.textContent = libro.categoria.nombre;
+        const estado = document.createElement("span"); estado.className = libro.disponible ? "estado disponible" : "estado ocupado"; estado.textContent = libro.disponible ? "Disponible" : "Prestado";
+        const link = document.createElement("a"); link.className = "btn btn-primary w-100 mt-3"; link.href = `/Home/Detalle/${libro.id}`; link.textContent = "Ver detalle";
+        contenido.append(categoria, titulo, autor, estado, link);
+        tarjeta.innerHTML = imagen; tarjeta.append(contenido); columna.append(tarjeta); contenedor.append(columna);
+    });
+    boton.dataset.desde = desde + libros.length;
+    if (libros.length < 8) boton.remove(); else boton.disabled = false;
+});
+</script>
+}
