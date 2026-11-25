@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <rect width="400" height="600" fill="#dce7f4"/>
+  <rect x="40" y="40" width="320" height="520" rx="18" fill="#ffffff" stroke="#1f5ca8" stroke-width="10"/>
+  <rect x="78" y="78" width="244" height="12" rx="6" fill="#1f5ca8"/>
+  <circle cx="200" cy="270" r="82" fill="#1f5ca8"/>
+  <text x="200" y="290" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="90">B</text>
+  <text x="200" y="430" text-anchor="middle" fill="#1f5ca8" font-family="Arial" font-size="34">BiblioLucio</text>
+</svg>

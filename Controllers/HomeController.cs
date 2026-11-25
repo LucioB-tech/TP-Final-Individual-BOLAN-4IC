@@ -128,20 +128,63 @@ public class HomeController : Controller
         if (!RequiereSesion()) return RedirectToAction("Login");
         int idUsuario = HttpContext.Session.GetInt32("IdUsuario")!.Value;
 
-        if (_bd.ContarPrestamosActivos(idUsuario) >= 3)
+        var libro = _bd.ObtenerLibro(idLibro);
+        if (libro == null)
+        {
+            TempData["Mensaje"] = "El libro no existe.";
+            return RedirectToAction("Catalogo");
+        }
+        if (!Request.Form.TryGetValue("fechaRetiro", out var valorFecha)
+            || !DateTime.TryParse(valorFecha, out DateTime fechaRetiro))
+        {
+            TempData["Mensaje"] = "Elegí una fecha de retiro válida.";
+            return RedirectToAction("Detalle", new { id = idLibro });
+        }
+
+        DateTime hoy = DateTime.Today;
+        if (fechaRetiro.Date < hoy)
+        {
+            TempData["Mensaje"] = "La fecha de retiro no puede ser anterior a hoy.";
+            return RedirectToAction("Detalle", new { id = idLibro });
+        }
+
+        DateTime fechaDevolucion = fechaRetiro.Date.AddDays(7);
+        if (_bd.ContarPrestamosEnPeriodo(idUsuario, fechaRetiro.Date, fechaDevolucion) >= 3)
         {
             TempData["Mensaje"] = "Ya tenés 3 préstamos activos. Cancelá o esperá a devolver uno para pedir otro.";
             return RedirectToAction("Detalle", new { id = idLibro });
         }
-        if (_bd.LibroTienePrestamoActivo(idLibro))
+        DateTime? hasta = _bd.ObtenerHastaCuandoEstaPrestado(idLibro, fechaRetiro.Date, fechaDevolucion);
+        if (hasta != null)
         {
-            TempData["Mensaje"] = "Este libro no está disponible en este momento.";
+            TempData["Mensaje"] = $"Ese libro está prestado hasta el {hasta.Value:dd/MM/yyyy}.";
             return RedirectToAction("Detalle", new { id = idLibro });
         }
 
-        string codigo = _bd.CrearPrestamo(idLibro, idUsuario);
+        string codigo = _bd.CrearPrestamo(idLibro, idUsuario, fechaRetiro.Date, fechaDevolucion);
         TempData["Mensaje"] = "Préstamo solicitado. Tu código de 6 caracteres es: " + codigo;
         return RedirectToAction("MisPrestamos");
+    }
+
+    [HttpGet]
+    public IActionResult Disponibilidad(int id, DateTime? fecha)
+    {
+        if (!RequiereSesion()) return Unauthorized();
+        DateTime retiro = fecha?.Date ?? DateTime.Today;
+        if (retiro < DateTime.Today)
+            return Json(new { disponible = false, hasta = "", mensaje = "La fecha de retiro no puede ser anterior a hoy." });
+
+        DateTime devolucion = retiro.AddDays(7);
+        DateTime? hasta = _bd.ObtenerHastaCuandoEstaPrestado(id, retiro, devolucion);
+        if (hasta == null)
+            return Json(new { disponible = true, hasta = "", mensaje = "Disponible para ese período." });
+
+        return Json(new
+        {
+            disponible = false,
+            hasta = hasta.Value.ToString("dd/MM/yyyy"),
+            mensaje = $"Ese libro está prestado hasta el {hasta.Value:dd/MM/yyyy}."
+        });
     }
 
     [HttpGet]
@@ -151,7 +194,7 @@ public class HomeController : Controller
         int idUsuario = HttpContext.Session.GetInt32("IdUsuario")!.Value;
         ViewBag.Activos = _bd.ObtenerPrestamos(idUsuario, false);
         ViewBag.Pasados = _bd.ObtenerPrestamos(idUsuario, true);
-        return View();
+        return View("Prestamos");
     }
 
     [HttpPost]

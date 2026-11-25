@@ -17,7 +17,7 @@
 {
     <div class="col-md-6">
         <div class="prestamo-card" id="prestamo-@p.Id">
-            <h3>@p.Titulo</h3><p>@p.Autor</p>
+            <h3>@p.Libro.Titulo</h3><p>@p.Libro.Autor</p>
             <p>Retiro: @p.FechaRetiro.ToString("dd/MM/yyyy")</p>
             <p>Devolución: @p.FechaDevolucion.ToString("dd/MM/yyyy")</p>
             <p><strong>Código:</strong> @p.Codigo</p>
@@ -33,7 +33,7 @@
 {
     <div class="col-md-6">
         <div class="prestamo-card">
-            <h3>@p.Titulo</h3><p>@p.Autor</p>
+            <h3>@p.Libro.Titulo</h3><p>@p.Libro.Autor</p>
             <p>Retiro: @p.FechaRetiro.ToString("dd/MM/yyyy")</p>
             <p>Devolución: @p.FechaDevolucion.ToString("dd/MM/yyyy")</p>
             <span class="estado ocupado">@(p.Cancelado ? "Cancelado" : "Finalizado")</span>

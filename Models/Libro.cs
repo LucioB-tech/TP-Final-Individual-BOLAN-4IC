@@ -8,7 +8,6 @@ public class Libro
     public int AnioEdicion { get; set; }
     public string Descripcion { get; set; } = "";
     public string Imagen { get; set; } = "";
-    public int IdCategoria { get; set; }
-    public string Categoria { get; set; } = "";
+    public Categoria Categoria { get; set; } = new Categoria();
     public bool Disponible { get; set; }
 }

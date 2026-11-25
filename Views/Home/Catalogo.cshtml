@@ -23,7 +23,7 @@
                     <div class="libro-sin-imagen">📖</div>
                 }
                 <div class="libro-contenido">
-                    <span class="categoria">@libro.Categoria</span>
+                    <span class="categoria">@libro.Categoria.Nombre</span>
                     <h2>@libro.Titulo</h2>
                     <p>@libro.Autor</p>
                     <span class="estado @(libro.Disponible ? "disponible" : "ocupado")">@(libro.Disponible ? "Disponible" : "Prestado")</span>
@@ -57,7 +57,7 @@ document.getElementById("verMas")?.addEventListener("click", async function () {
         const autor = document.createElement("p"); autor.textContent = libro.autor;
         const tarjeta = document.createElement("article"); tarjeta.className = "libro-card";
         const contenido = document.createElement("div"); contenido.className = "libro-contenido";
-        const categoria = document.createElement("span"); categoria.className = "categoria"; categoria.textContent = libro.categoria;
+        const categoria = document.createElement("span"); categoria.className = "categoria"; categoria.textContent = libro.categoria.nombre;
         const estado = document.createElement("span"); estado.className = libro.disponible ? "estado disponible" : "estado ocupado"; estado.textContent = libro.disponible ? "Disponible" : "Prestado";
         const link = document.createElement("a"); link.className = "btn btn-primary w-100 mt-3"; link.href = `/Home/Detalle/${libro.id}`; link.textContent = "Ver detalle";
         contenido.append(categoria, titulo, autor, estado, link);
